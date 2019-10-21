@@ -15,7 +15,7 @@
 	"autoload": {
 		"psr-4": {
 			"HalloWelt\\MediaWiki\\Lib\\CommandLineTools\\": "src/",
-			"HalloWelt\\MediaWiki\\Lib\\CommandLineTools\\Tests": "tests/phpunit/"
+			"HalloWelt\\MediaWiki\\Lib\\CommandLineTools\\Tests\\": "tests/phpunit/"
 		}
 	}
 }
