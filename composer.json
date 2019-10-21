@@ -1,0 +1,21 @@
+{
+	"name": "hallowelt/mediawiki-lib-commandline-tools",
+	"description": "Class library for various command line applications for MediaWiki",
+	"type": "library",
+	"require-dev": {
+		"phpunit/phpunit": "^6.5"
+	},
+	"license": "GPL-3.0-only",
+	"authors": [
+		{
+			"name": "Robert Vogel",
+			"email": "vogel@hallowelt.com"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"HalloWelt\\MediaWiki\\Lib\\CommandLineTools\\": "src/",
+			"HalloWelt\\MediaWiki\\Lib\\CommandLineTools\\Tests": "tests/phpunit/"
+		}
+	}
+}
