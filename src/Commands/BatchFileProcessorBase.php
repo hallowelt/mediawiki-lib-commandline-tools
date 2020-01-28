@@ -5,7 +5,9 @@ namespace HalloWelt\MediaWiki\Lib\CommandLineTools\Commands;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input;
 use Symfony\Component\Console\Output\OutputInterface;
-use SplFileObject;
+use SplFileInfo;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
 
 abstract class BatchFileProcessorBase extends Command {
 
@@ -33,12 +35,12 @@ abstract class BatchFileProcessorBase extends Command {
 
 	/**
 	 *
-	 * @var SplFileObject[]
+	 * @var SplFileInfo[]
 	 */
 	protected $files = [];
 
 	/**
-	 * @var SplFileObject
+	 * @var SplFileInfo
 	 */
 	protected $currentFile = null;
 
@@ -84,7 +86,7 @@ abstract class BatchFileProcessorBase extends Command {
 
 		//An input file was specified
 		if( is_file( $this->src ) ) {
-			$this->files[$this->src] = new SplFileObject( $this->src );
+			$this->files[$this->src] = new SplFileInfo( $this->src );
 			return;
 		}
 
@@ -98,13 +100,16 @@ abstract class BatchFileProcessorBase extends Command {
 
 		$extensionWhitelist = array_map( 'strtolower', $this->makeExtensionWhitelist() );
 		foreach ( $files as $path => $file ) {
+			if( $file->isDir() ) {
+				continue;
+			}
 			if( !empty( $extensionWhitelist ) ) {
 				$fileExt = strtolower( $file->getExtension() );
 				if( !in_array( $fileExt, $extensionWhitelist ) ) {
 					continue;
 				}
 			}
-			$this->files[$file->getPathname()] = new SplFileObject( $file->getPathname() );
+			$this->files[$file->getPathname()] = new SplFileInfo( $file->getPathname() );
 		}
 
 		ksort( $this->files, SORT_NATURAL );
@@ -122,5 +127,5 @@ abstract class BatchFileProcessorBase extends Command {
 		return [];
 	}
 
-	protected abstract function processFile( SplFileObject $file ) : bool;
+	protected abstract function processFile( SplFileInfo $file ) : bool;
 }
