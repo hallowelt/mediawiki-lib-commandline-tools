@@ -2,12 +2,12 @@
 
 namespace HalloWelt\MediaWiki\Lib\CommandLineTools\Commands;
 
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input;
 use Symfony\Component\Console\Output\OutputInterface;
-use SplFileInfo;
-use RecursiveIteratorIterator;
-use RecursiveDirectoryIterator;
 
 abstract class BatchFileProcessorBase extends Command {
 
@@ -65,6 +65,11 @@ abstract class BatchFileProcessorBase extends Command {
 		return parent::configure();
 	}
 
+	/**
+	 * @param Input\InputInterface $input
+	 * @param OutputInterface $output
+	 * @return void
+	 */
 	protected function execute( Input\InputInterface $input, OutputInterface $output ) {
 		$this->input = $input;
 		$this->output = $output;
@@ -84,13 +89,13 @@ abstract class BatchFileProcessorBase extends Command {
 	protected function makeFileList() {
 		$this->files = [];
 
-		//An input file was specified
-		if( is_file( $this->src ) ) {
+		// An input file was specified
+		if ( is_file( $this->src ) ) {
 			$this->files[$this->src] = new SplFileInfo( $this->src );
 			return;
 		}
 
-		//An input directory was specified
+		// An input directory was specified
 		$this->output->write( 'Fetching file list ...' );
 
 		$files = new RecursiveIteratorIterator(
@@ -100,12 +105,12 @@ abstract class BatchFileProcessorBase extends Command {
 
 		$extensionWhitelist = array_map( 'strtolower', $this->makeExtensionWhitelist() );
 		foreach ( $files as $path => $file ) {
-			if( $file->isDir() ) {
+			if ( $file->isDir() ) {
 				continue;
 			}
-			if( !empty( $extensionWhitelist ) ) {
+			if ( !empty( $extensionWhitelist ) ) {
 				$fileExt = strtolower( $file->getExtension() );
-				if( !in_array( $fileExt, $extensionWhitelist ) ) {
+				if ( !in_array( $fileExt, $extensionWhitelist ) ) {
 					continue;
 				}
 			}
@@ -117,15 +122,22 @@ abstract class BatchFileProcessorBase extends Command {
 	}
 
 	protected function processFiles() {
-		foreach( $this->files as $file ) {
+		foreach ( $this->files as $file ) {
 			$this->currentFile = $file;
 			$result = $this->processFile( $file );
 		}
 	}
 
+	/**
+	 * @return array
+	 */
 	protected function makeExtensionWhitelist() {
 		return [];
 	}
 
-	protected abstract function processFile( SplFileInfo $file ) : bool;
+	/**
+	 * @param SplFileInfo $file
+	 * @return boolean
+	 */
+	abstract protected function processFile( SplFileInfo $file ) : bool;
 }

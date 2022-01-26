@@ -2,9 +2,6 @@
 	"name": "hallowelt/mediawiki-lib-commandline-tools",
 	"description": "Class library for various command line applications for MediaWiki",
 	"type": "library",
-	"require-dev": {
-		"phpunit/phpunit": "^6.5"
-	},
 	"license": "GPL-3.0-only",
 	"authors": [
 		{
@@ -12,10 +9,35 @@
 			"email": "vogel@hallowelt.com"
 		}
 	],
+	"require-dev": {
+		"mediawiki/mediawiki-codesniffer": "31.0.0",
+		"mediawiki/mediawiki-phan-config": "0.11.0",
+		"mediawiki/minus-x": "1.1.1",
+		"jakub-onderka/php-parallel-lint": "1.0.0",
+		"jakub-onderka/php-console-highlighter": "0.4.0",
+		"phpunit/phpunit": "^8"
+	},
 	"autoload": {
 		"psr-4": {
 			"HalloWelt\\MediaWiki\\Lib\\CommandLineTools\\": "src/",
 			"HalloWelt\\MediaWiki\\Lib\\CommandLineTools\\Tests\\": "tests/phpunit/"
 		}
+	},
+	"scripts": {
+		"unittest": [
+			"vendor/phpunit/phpunit/phpunit --configuration .phpunit.xml"
+		],
+		"test": [
+			"parallel-lint . --exclude vendor --exclude node_modules",
+			"minus-x check .",
+			"phpcs -sp"
+		],
+		"fix": [
+			"minus-x fix .",
+			"phpcbf"
+		],
+		"lint": [
+			"phan --no-progress-bar -m text | sed 's, ,:,'"
+		]
 	}
 }
