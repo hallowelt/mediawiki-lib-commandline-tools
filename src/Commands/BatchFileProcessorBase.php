@@ -68,9 +68,9 @@ abstract class BatchFileProcessorBase extends Command {
 	/**
 	 * @param Input\InputInterface $input
 	 * @param OutputInterface $output
-	 * @return void
+	 * @return int
 	 */
-	protected function execute( Input\InputInterface $input, OutputInterface $output ) {
+	protected function execute( Input\InputInterface $input, OutputInterface $output ): int {
 		$this->input = $input;
 		$this->output = $output;
 
@@ -81,9 +81,10 @@ abstract class BatchFileProcessorBase extends Command {
 		$this->output->writeln( "Destination: {$this->dest}\n" );
 
 		$this->makeFileList();
-		$this->processFiles();
+		$returnValue = $this->processFiles();
 
 		$this->output->writeln( '<info>Done.</info>' );
+		return $returnValue;
 	}
 
 	protected function makeFileList() {
@@ -121,11 +122,17 @@ abstract class BatchFileProcessorBase extends Command {
 		$this->output->writeln( '<info>done.</info>' );
 	}
 
-	protected function processFiles() {
+	protected function processFiles(): int {
+		$overallReturn = 0;
 		foreach ( $this->files as $file ) {
 			$this->currentFile = $file;
 			$result = $this->processFile( $file );
+			if ( $result === false ) {
+				$this->output->writeln( "<error>Failed to process file {$file->getPathname()}</error>" );
+				$overallReturn = 1;
+			}
 		}
+		return $overallReturn;
 	}
 
 	/**
