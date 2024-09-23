@@ -137,7 +137,7 @@ abstract class BatchFileProcessorBase extends Command {
 
 	/**
 	 * @param SplFileInfo $file
-	 * @return boolean
+	 * @return bool
 	 */
-	abstract protected function processFile( SplFileInfo $file ) : bool;
+	abstract protected function processFile( SplFileInfo $file ): bool;
 }
