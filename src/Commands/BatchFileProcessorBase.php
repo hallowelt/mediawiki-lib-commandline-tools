@@ -81,9 +81,10 @@ abstract class BatchFileProcessorBase extends Command {
 		$this->output->writeln( "Destination: {$this->dest}\n" );
 
 		$this->makeFileList();
-		$this->processFiles();
+		$resultValue = $this->processFiles();
 
 		$this->output->writeln( '<info>Done.</info>' );
+		return $resultValue;
 	}
 
 	protected function makeFileList() {
@@ -122,10 +123,15 @@ abstract class BatchFileProcessorBase extends Command {
 	}
 
 	protected function processFiles() {
+		$overallResult = 0;
 		foreach ( $this->files as $file ) {
 			$this->currentFile = $file;
 			$result = $this->processFile( $file );
+			if ( $result !== 0 ) {
+				$overallResult = (int)$result;
+			}
 		}
+		return $overallResult;
 	}
 
 	/**
