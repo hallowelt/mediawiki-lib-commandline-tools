@@ -84,6 +84,7 @@ abstract class BatchFileProcessorBase extends Command {
 		$returnValue = $this->processFiles();
 
 		$this->output->writeln( '<info>Done.</info>' );
+
 		return $returnValue;
 	}
 
@@ -123,15 +124,16 @@ abstract class BatchFileProcessorBase extends Command {
 	}
 
 	protected function processFiles(): int {
-		$overallReturn = 0;
+		$overallReturn = Command::SUCCESS;
 		foreach ( $this->files as $file ) {
 			$this->currentFile = $file;
 			$result = $this->processFile( $file );
 			if ( $result === false ) {
 				$this->output->writeln( "<error>Failed to process file {$file->getPathname()}</error>" );
-				$overallReturn = 1;
+				$overallReturn = Command::FAILURE;
 			}
 		}
+
 		return $overallReturn;
 	}
 
