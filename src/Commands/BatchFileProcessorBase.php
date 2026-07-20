@@ -75,6 +75,10 @@ abstract class BatchFileProcessorBase extends Command {
 		$this->output = $output;
 
 		$this->src = realpath( $this->input->getOption( 'src' ) );
+		if ( $this->src === false ) {
+			$output->writeln( '<error>Source does not exist: ' . $this->input->getOption( 'src' ) . '</error>' );
+			return Command::FAILURE;
+		}
 		$this->dest = realpath( $this->input->getOption( 'dest' ) );
 
 		$this->output->writeln( "Source: {$this->src}" );
