@@ -9,16 +9,17 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * work on a set of files
+ */
 abstract class BatchFileProcessorBase extends Command {
 
 	/**
-	 *
 	 * @var Input\InputInterface
 	 */
 	protected $input = null;
 
 	/**
-	 *
 	 * @var OutputInterface
 	 */
 	protected $output = null;
@@ -34,7 +35,6 @@ abstract class BatchFileProcessorBase extends Command {
 	protected $dest = '';
 
 	/**
-	 *
 	 * @var SplFileInfo[]
 	 */
 	protected $files = [];
@@ -44,6 +44,9 @@ abstract class BatchFileProcessorBase extends Command {
 	 */
 	protected $currentFile = null;
 
+	/**
+	 * @inheritDoc
+	 */
 	protected function configure() {
 		$this
 			->setDefinition( new Input\InputDefinition( [
