@@ -9,16 +9,17 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * work on a set of files
+ */
 abstract class BatchFileProcessorBase extends Command {
 
 	/**
-	 *
 	 * @var Input\InputInterface
 	 */
 	protected $input = null;
 
 	/**
-	 *
 	 * @var OutputInterface
 	 */
 	protected $output = null;
@@ -34,7 +35,6 @@ abstract class BatchFileProcessorBase extends Command {
 	protected $dest = '';
 
 	/**
-	 *
 	 * @var SplFileInfo[]
 	 */
 	protected $files = [];
@@ -44,6 +44,9 @@ abstract class BatchFileProcessorBase extends Command {
 	 */
 	protected $currentFile = null;
 
+	/**
+	 * @inheritDoc
+	 */
 	protected function configure() {
 		$this
 			->setDefinition( new Input\InputDefinition( [
@@ -75,7 +78,24 @@ abstract class BatchFileProcessorBase extends Command {
 		$this->output = $output;
 
 		$this->src = realpath( $this->input->getOption( 'src' ) );
+		if ( $this->src === false ) {
+			$output->writeln( '<error>Source does not exist: ' . $this->input->getOption( 'src' ) . '</error>' );
+			return Command::FAILURE;
+		}
 		$this->dest = realpath( $this->input->getOption( 'dest' ) );
+		if ( $this->dest === false ) {
+			if ( !mkdir( $this->dest, 0777, true ) ) {
+				$output->writeln(
+					'<error>Destination does not exist and cannot be created: ' .
+					$this->input->getOption( 'dest' ) . '</error>' );
+				return Command::FAILURE;
+			}
+		} elseif ( !is_dir( $this->dest ) ) {
+			$output->writeln(
+				'<error>Destination is not a directory: ' .
+				$this->input->getOption( 'dest' ) . '</error>' );
+			return Command::FAILURE;
+		}
 
 		$this->output->writeln( "Source: {$this->src}" );
 		$this->output->writeln( "Destination: {$this->dest}\n" );
