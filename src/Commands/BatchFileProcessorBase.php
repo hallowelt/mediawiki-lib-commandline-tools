@@ -80,6 +80,19 @@ abstract class BatchFileProcessorBase extends Command {
 			return Command::FAILURE;
 		}
 		$this->dest = realpath( $this->input->getOption( 'dest' ) );
+		if ( $this->dest === false ) {
+			if ( !mkdir( $this->dest, 0777, true ) ) {
+				$output->writeln(
+					'<error>Destination does not exist and cannot be created: ' .
+					$this->input->getOption( 'dest' ) . '</error>' );
+				return Command::FAILURE;
+			}
+		} elseif ( !is_dir( $this->dest ) ) {
+			$output->writeln(
+				'<error>Destination is not a directory: ' .
+				$this->input->getOption( 'dest' ) . '</error>' );
+			return Command::FAILURE;
+		}
 
 		$this->output->writeln( "Source: {$this->src}" );
 		$this->output->writeln( "Destination: {$this->dest}\n" );
