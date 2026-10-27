@@ -2,23 +2,31 @@
 
 namespace HalloWelt\MediaWiki\Lib\CommandLineTools\Commands;
 
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerAwareTrait;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input;
+use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
 
-abstract class BatchFileProcessorBase extends Command {
+/**
+ * work on a set of files
+ *
+ * Progress and error messages go through the PSR-3 logger given by setLogger(). Without one,
+ * a Symfony ConsoleLogger on the command's output is used, so verbosity flags apply.
+ */
+abstract class BatchFileProcessorBase extends Command implements LoggerAwareInterface {
+	use LoggerAwareTrait;
 
 	/**
-	 *
 	 * @var Input\InputInterface
 	 */
 	protected $input = null;
 
 	/**
-	 *
 	 * @var OutputInterface
 	 */
 	protected $output = null;
@@ -34,7 +42,6 @@ abstract class BatchFileProcessorBase extends Command {
 	protected $dest = '';
 
 	/**
-	 *
 	 * @var SplFileInfo[]
 	 */
 	protected $files = [];
@@ -44,6 +51,9 @@ abstract class BatchFileProcessorBase extends Command {
 	 */
 	protected $currentFile = null;
 
+	/**
+	 * @inheritDoc
+	 */
 	protected function configure() {
 		$this
 			->setDefinition( new Input\InputDefinition( [
@@ -73,17 +83,35 @@ abstract class BatchFileProcessorBase extends Command {
 	protected function execute( Input\InputInterface $input, OutputInterface $output ): int {
 		$this->input = $input;
 		$this->output = $output;
+		$this->logger ??= new ConsoleLogger( $output );
 
 		$this->src = realpath( $this->input->getOption( 'src' ) );
+		if ( $this->src === false ) {
+			$this->logger->error( 'Source does not exist: ' . $this->input->getOption( 'src' ) );
+			return Command::FAILURE;
+		}
 		$this->dest = realpath( $this->input->getOption( 'dest' ) );
+		if ( $this->dest === false ) {
+			if ( !mkdir( $this->dest, 0777, true ) ) {
+				$this->logger->error(
+					'Destination does not exist and cannot be created: ' .
+					$this->input->getOption( 'dest' ) );
+				return Command::FAILURE;
+			}
+		} elseif ( !is_dir( $this->dest ) ) {
+			$this->logger->error(
+				'Destination is not a directory: ' .
+				$this->input->getOption( 'dest' ) );
+			return Command::FAILURE;
+		}
 
-		$this->output->writeln( "Source: {$this->src}" );
-		$this->output->writeln( "Destination: {$this->dest}\n" );
+		$this->logger->info( "Source: {$this->src}" );
+		$this->logger->info( "Destination: {$this->dest}" );
 
 		$this->makeFileList();
 		$returnValue = $this->processFiles();
 
-		$this->output->writeln( '<info>Done.</info>' );
+		$this->logger->info( 'Done.' );
 
 		return $returnValue;
 	}
@@ -98,7 +126,7 @@ abstract class BatchFileProcessorBase extends Command {
 		}
 
 		// An input directory was specified
-		$this->output->write( 'Fetching file list ...' );
+		$this->logger->info( 'Fetching file list ...' );
 
 		$files = new RecursiveIteratorIterator(
 			new RecursiveDirectoryIterator( $this->src ),
@@ -120,7 +148,7 @@ abstract class BatchFileProcessorBase extends Command {
 		}
 
 		ksort( $this->files, SORT_NATURAL );
-		$this->output->writeln( '<info>done.</info>' );
+		$this->logger->info( 'Found {count} file(s).', [ 'count' => count( $this->files ) ] );
 	}
 
 	protected function processFiles(): int {
@@ -129,7 +157,7 @@ abstract class BatchFileProcessorBase extends Command {
 			$this->currentFile = $file;
 			$result = $this->processFile( $file );
 			if ( $result === false ) {
-				$this->output->writeln( "<error>Failed to process file {$file->getPathname()}</error>" );
+				$this->logger->error( "Failed to process file {$file->getPathname()}" );
 				$overallReturn = Command::FAILURE;
 			}
 		}
